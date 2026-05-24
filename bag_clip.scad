@@ -78,6 +78,10 @@ cap_depth = 4.0;
 // Rod length (slightly shorter than clip to prevent protruding at the front)
 rod_length = clip_length - 1.0;
 
+// The flat cut height (relative to Z=0 bed height of the concentric center).
+// Slices the bottom of the rod and cap to create a flat print base of 0.8mm thick.
+flat_cut_z = shell_r_in - rod_radius + 0.8;
+
 
 // =========================================================================
 // MAIN ENTRY POINT
@@ -87,22 +91,21 @@ if (part == "print_layout") {
     // Render both parts flat on the print bed side-by-side
     outer_shell();
     
-    // Position the rod parallel to the shell with some breathing room
-    translate([0, shell_r_in * 2.5 + 5, 0])
+    // Position the rod parallel to the shell with its flat bottom sitting perfectly on Z=0
+    translate([0, shell_r_in * 2.5 + 5, -flat_cut_z])
     inner_rod();
 }
 else if (part == "assembled") {
     // Render them assembled for inspection
-    // The outer shell is in its default position
     %outer_shell(); // Translucent outer shell
-    
-    // Slide the rod in from the back (X=0)
     inner_rod();
 }
 else if (part == "shell_only") {
     outer_shell();
 }
 else if (part == "rod_only") {
+    // Center it on the bed for printing alone
+    translate([0, 0, -flat_cut_z])
     inner_rod();
 }
 
@@ -128,17 +131,29 @@ module outer_shell() {
             cylinder(r1 = shell_r_out, r2 = shell_r_out - 1.2, h = 5, $fn = 6);
         }
         
-        // 3. Central Bore (Hollow cavity for the rod)
+        // 3. Central Bore (Hollow cavity for the rod) with a flat floor
         // Starts after the solid back block and goes all the way out the front
-        translate([back_length, 0, shell_r_in])
-        rotate([0, 90, 0])
-        cylinder(r = bore_radius, h = clip_length - back_length + 1, $fn = $fn);
+        difference() {
+            translate([back_length, 0, shell_r_in])
+            rotate([0, 90, 0])
+            cylinder(r = bore_radius, h = clip_length - back_length + 1, $fn = $fn);
+            
+            // Flatten the bottom of the bore cavity to match the flat bottom of the rod
+            translate([back_length - 1, -bore_radius - 1, -0.1])
+            cube([clip_length - back_length + 3, (bore_radius + 1) * 2, flat_cut_z - gap_size + 0.1]);
+        }
         
         // 4. Rod Entry Tunnel (Through the back block to let the rod slide in)
-        // Has a small clearance so the rod slides smoothly
-        translate([-1, 0, shell_r_in])
-        rotate([0, 90, 0])
-        cylinder(r = rod_radius + snap_clearance, h = back_length + 2, $fn = $fn);
+        // Has a matching flat bottom
+        difference() {
+            translate([-1, 0, shell_r_in])
+            rotate([0, 90, 0])
+            cylinder(r = rod_radius + snap_clearance, h = back_length + 2, $fn = $fn);
+            
+            // Flatten the bottom of the entry tunnel
+            translate([-2, -rod_radius - 2, -0.1])
+            cube([back_length + 4, (rod_radius + 2) * 2, flat_cut_z - snap_clearance + 0.1]);
+        }
         
         // 5. Cap Recess (Half-moon socket at the very back)
         // The rod cap snaps into this recess to sit flush
@@ -147,9 +162,9 @@ module outer_shell() {
         difference() {
             cylinder(r = cap_radius + snap_clearance, h = cap_depth + 0.1, $fn = $fn);
             
-            // Flatten the bottom of the recess to match the flat bottom of the shell/cap
-            translate([-cap_radius - 1, -cap_radius - 1, -shell_r_in - 0.1])
-            cube([(cap_radius + 1) * 2, (cap_radius + 1) * 2, shell_r_in]);
+            // Flatten the bottom of the recess to match the flat bottom of the cap
+            translate([-cap_radius - 2, -cap_radius - 2, -shell_r_in - 0.1])
+            cube([(cap_radius + 2) * 2, (cap_radius + 2) * 2, flat_cut_z - snap_clearance + 0.1]);
         }
         
         // 6. Longitudinal Entry Slot (At the top of the shell)
@@ -184,36 +199,37 @@ module outer_shell() {
 
 // --- INNER ROD MODULE ---
 module inner_rod() {
-    union() {
-        // 1. Main Rod Cylinder
-        // Positioned concentrically with the shell (centered at Z = shell_r_in when assembled)
-        translate([cap_depth, 0, shell_r_in])
-        rotate([0, 90, 0])
-        cylinder(r = rod_radius, h = rod_length - cap_depth - front_taper_length, $fn = $fn);
-        
-        // 2. Smooth Tapered Front Nose
-        // Guides the bag smoothly into the bore
-        translate([rod_length - front_taper_length, 0, shell_r_in])
-        rotate([0, 90, 0])
-        cylinder(r1 = rod_radius, r2 = 1.0, h = front_taper_length, $fn = $fn);
-        
-        // 3. Spherical Safety Tip (No sharp edges to tear bags or scratch fingers)
-        translate([rod_length, 0, shell_r_in])
-        sphere(r = 1.0, $fn = $fn);
-        
-        // 4. Rod Cap (Half-moon shaped to fit flush into the shell's back recess)
-        difference() {
+    difference() {
+        union() {
+            // 1. Main Rod Cylinder
+            // Positioned concentrically with the shell (centered at Z = shell_r_in when assembled)
+            translate([cap_depth, 0, shell_r_in])
+            rotate([0, 90, 0])
+            cylinder(r = rod_radius, h = rod_length - cap_depth - front_taper_length, $fn = $fn);
+            
+            // 2. Smooth Tapered Front Nose
+            // Guides the bag smoothly into the bore
+            translate([rod_length - front_taper_length, 0, shell_r_in])
+            rotate([0, 90, 0])
+            cylinder(r1 = rod_radius, r2 = 1.0, h = front_taper_length, $fn = $fn);
+            
+            // 3. Spherical Safety Tip (No sharp edges to tear bags or scratch fingers)
+            translate([rod_length, 0, shell_r_in])
+            sphere(r = 1.0, $fn = $fn);
+            
+            // 4. Rod Cap (Half-moon shaped to fit flush into the shell's back recess)
             translate([0, 0, shell_r_in])
             rotate([0, 90, 0])
             cylinder(r = cap_radius, h = cap_depth, $fn = $fn);
             
-            // Flatten the bottom at Z = 0 so it prints flat on the bed without supports
-            translate([-1, -cap_radius - 1, -0.1])
-            cube([cap_depth + 2, (cap_radius + 1) * 2, shell_r_in]);
+            // 5. Snap Lock Protrusion (Small tactile snap bump on top of the cap)
+            translate([cap_depth / 2, 0, shell_r_in + cap_radius - 0.15])
+            sphere(r = 0.55, $fn = 20);
         }
         
-        // 5. Snap Lock Protrusion (Small tactile snap bump on top of the cap)
-        translate([cap_depth / 2, 0, shell_r_in + cap_radius - 0.15])
-        sphere(r = 0.55, $fn = 20);
+        // 6. Global Flat Bottom Cut (Slices off the bottom of the entire rod, taper, tip, and cap!)
+        // Slices exactly at Z = flat_cut_z to create a perfect, co-planar printing surface
+        translate([-10, -cap_radius - 5, -0.1])
+        cube([clip_length + 20, (cap_radius + 5) * 2, flat_cut_z + 0.1]);
     }
 }
