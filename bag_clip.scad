@@ -117,12 +117,14 @@ module outer_shell() {
         union() {
             // 1. Main Hexagonal Body (Straight Section)
             translate([0, 0, shell_r_in])
-            rotate([30, 90, 0])
+            rotate([0, 90, 0])
+            rotate([0, 0, 30])
             cylinder(r = shell_r_out, h = clip_length - 5, $fn = 6);
             
             // 2. Tapered Front Nose (Chamfered Hexagon for premium look/feel)
             translate([clip_length - 5, 0, shell_r_in])
-            rotate([30, 90, 0])
+            rotate([0, 90, 0])
+            rotate([0, 0, 30])
             cylinder(r1 = shell_r_out, r2 = shell_r_out - 1.2, h = 5, $fn = 6);
         }
         
@@ -170,7 +172,8 @@ module outer_shell() {
         // Three stylish, recessed bands near the back for tactile grip
         for (i = [0 : 2]) {
             translate([back_length + 5 + i * 7, 0, shell_r_in])
-            rotate([30, 90, 0])
+            rotate([0, 90, 0])
+            rotate([0, 0, 30])
             difference() {
                 cylinder(r = shell_r_out + 0.5, h = 1.6, center = true, $fn = 6);
                 cylinder(r = shell_r_out - 0.4, h = 2, center = true, $fn = 6);
