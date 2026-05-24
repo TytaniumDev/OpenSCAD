@@ -215,20 +215,5 @@ module inner_rod() {
         // 5. Snap Lock Protrusion (Small tactile snap bump on top of the cap)
         translate([cap_depth / 2, 0, shell_r_in + cap_radius - 0.15])
         sphere(r = 0.55, $fn = 20);
-        
-        // 6. Integrated Hanging Loop (Premium feature to hang clips or seal bags on a hook)
-        translate([-7.5, 0, shell_r_in])
-        rotate([0, 0, 0])
-        difference() {
-            // Outer loop body
-            cylinder(r = 7.5, h = rod_radius * 2, center = true, $fn = $fn);
-            
-            // Inner cutout hole
-            cylinder(r = 4.5, h = rod_radius * 2 + 1, center = true, $fn = $fn);
-            
-            // Flatten the bottom of the loop to match the bed at Z = 0
-            translate([-8, -8, -shell_r_in - 0.1])
-            cube([16, 16, shell_r_in - rod_radius + 0.1]);
-        }
     }
 }
