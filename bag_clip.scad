@@ -166,15 +166,15 @@ module outer_shell() {
         }
         
         // 5. Cap Recess (Half-moon socket at the very back)
-        // The rod cap snaps into this recess to sit flush
-        translate([-0.1, 0, shell_r_in])
-        rotate([0, 90, 0])
+        // The rod cap snaps into this recess to sit flush. Sliced flat globally to match cap perfectly.
         difference() {
+            translate([-0.1, 0, shell_r_in])
+            rotate([0, 90, 0])
             cylinder(r = cap_radius + snap_clearance, h = cap_depth + 0.1, $fn = $fn);
             
             // Flatten the bottom of the recess to match the flat bottom of the cap
-            translate([-cap_radius - 2, -cap_radius - 2, -shell_r_in - 0.1])
-            cube([(cap_radius + 2) * 2, (cap_radius + 2) * 2, flat_cut_z - snap_clearance + 0.1]);
+            translate([-1, -cap_radius - 2, -0.1])
+            cube([cap_depth + 2, (cap_radius + 2) * 2, flat_cut_z - snap_clearance + 0.1]);
         }
         
         // 6. Longitudinal Entry Slot (At the top of the shell)
