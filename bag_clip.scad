@@ -38,6 +38,9 @@ back_length = 12; // [8:1:25]
 snap_clearance = 0.15; // [0.05:0.05:0.5]
 
 /* [Advanced / Detail Settings] */
+// Length of the entry taper at the front (mm) to guide the bag in easily.
+front_taper_length = 15; // [5:1:30]
+
 // Rendering resolution (number of fragments for cylinders/spheres)
 $fn = 60; // [20:10:120]
 
@@ -129,26 +132,13 @@ module outer_shell() {
         }
         
         // 3. Central Bore (Hollow cavity for the rod) with a flat floor
-        // Starts after the solid back block, runs forward, tapers down, and ends in a tight matching front socket
+        // Starts after the solid back block and goes all the way out the front
         difference() {
-            union() {
-                // Main wide bore (clamping section)
-                translate([back_length, 0, shell_r_in])
-                rotate([0, 90, 0])
-                cylinder(r = bore_radius, h = clip_length - back_length - 8, $fn = $fn);
-                
-                // Transition taper (funnels down to the snug front socket)
-                translate([clip_length - 8, 0, shell_r_in])
-                rotate([0, 90, 0])
-                cylinder(r1 = bore_radius, r2 = rod_radius + snap_clearance, h = 4, $fn = $fn);
-                
-                // Narrow front socket (fits the rod's hemispherical tip snugly)
-                translate([clip_length - 4, 0, shell_r_in])
-                rotate([0, 90, 0])
-                cylinder(r = rod_radius + snap_clearance, h = 5.1, $fn = $fn);
-            }
+            translate([back_length, 0, shell_r_in])
+            rotate([0, 90, 0])
+            cylinder(r = bore_radius, h = clip_length - back_length + 1, $fn = $fn);
             
-            // Flatten the bottom of the entire bore cavity to match the flat bottom of the rod
+            // Flatten the bottom of the bore cavity to match the flat bottom of the rod
             translate([back_length - 1, -bore_radius - 2, -0.1])
             cube([clip_length - back_length + 3, (bore_radius + 2) * 2, flat_cut_z - gap_size + 0.1]);
         }
@@ -182,12 +172,18 @@ module outer_shell() {
         translate([back_length, -slot_width / 2, shell_r_in])
         cube([clip_length - back_length + 1, slot_width, shell_r_out * 2]);
         
-        // 7. Snap Lock Dimple (Small recess at the top of the cap socket)
+        // 7. Internal Entry Taper (Conical flare at the front of the bore)
+        // Makes it incredibly easy to guide the bag crease into the clip
+        translate([clip_length - front_taper_length, 0, shell_r_in])
+        rotate([0, 90, 0])
+        cylinder(r1 = bore_radius, r2 = bore_radius + 1.8, h = front_taper_length + 0.1, $fn = $fn);
+        
+        // 8. Snap Lock Dimple (Small recess at the top of the cap socket)
         // Catches the snap bump on the rod to provide a solid "click" feedback
         translate([cap_depth / 2, 0, shell_r_in + (cap_radius + snap_clearance)])
         sphere(r = 0.7, $fn = 20);
         
-        // 8. Decorative Grip Grooves
+        // 9. Decorative Grip Grooves
         // Three stylish, recessed bands near the back for tactile grip
         for (i = [0 : 2]) {
             translate([back_length + 5 + i * 7, 0, shell_r_in])
@@ -205,27 +201,33 @@ module outer_shell() {
 module inner_rod() {
     difference() {
         union() {
-            // 1. Main Rod Cylinder (Constant diameter all the way to the front nose)
+            // 1. Main Rod Cylinder
             // Positioned concentrically with the shell (centered at Z = shell_r_in when assembled)
             translate([cap_depth, 0, shell_r_in])
             rotate([0, 90, 0])
-            cylinder(r = rod_radius, h = rod_length - cap_depth - rod_radius, $fn = $fn);
+            cylinder(r = rod_radius, h = rod_length - cap_depth - front_taper_length, $fn = $fn);
             
-            // 2. Hemispherical Front Tip (Saves material, removes sharp corners, and matches the sleeve socket)
-            translate([rod_length - rod_radius, 0, shell_r_in])
-            sphere(r = rod_radius, $fn = $fn);
+            // 2. Smooth Tapered Front Nose
+            // Guides the bag smoothly into the bore
+            translate([rod_length - front_taper_length, 0, shell_r_in])
+            rotate([0, 90, 0])
+            cylinder(r1 = rod_radius, r2 = 1.0, h = front_taper_length, $fn = $fn);
             
-            // 3. Rod Cap (Half-moon shaped to fit flush into the shell's back recess)
+            // 3. Spherical Safety Tip (No sharp edges to tear bags or scratch fingers)
+            translate([rod_length, 0, shell_r_in])
+            sphere(r = 1.0, $fn = $fn);
+            
+            // 4. Rod Cap (Half-moon shaped to fit flush into the shell's back recess)
             translate([0, 0, shell_r_in])
             rotate([0, 90, 0])
             cylinder(r = cap_radius, h = cap_depth, $fn = $fn);
             
-            // 4. Snap Lock Protrusion (Small tactile snap bump on top of the cap)
+            // 5. Snap Lock Protrusion (Small tactile snap bump on top of the cap)
             translate([cap_depth / 2, 0, shell_r_in + cap_radius - 0.15])
             sphere(r = 0.55, $fn = 20);
         }
         
-        // 5. Global Flat Bottom Cut (Slices off the bottom of the entire rod, tip, and cap!)
+        // 6. Global Flat Bottom Cut (Slices off the bottom of the entire rod, tip, and cap!)
         // Slices exactly at Z = flat_cut_z to create a perfect, co-planar printing surface
         translate([-10, -cap_radius - 5, -0.1])
         cube([clip_length + 20, (cap_radius + 5) * 2, flat_cut_z + 0.1]);
