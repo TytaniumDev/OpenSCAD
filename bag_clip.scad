@@ -82,6 +82,12 @@ rod_length = clip_length - 1.0;
 // Slices the bottom of the rod and cap to create a flat print base of 0.8mm thick.
 flat_cut_z = shell_r_in - rod_radius + 0.8;
 
+// Triangle base width for the rod stick (mm)
+triangle_base = rod_diameter;
+
+// Sphere radius at the end of the rod (mm)
+sphere_radius = bore_radius - snap_clearance;
+
 
 // =========================================================================
 // MAIN ENTRY POINT
@@ -155,7 +161,7 @@ module outer_shell() {
             cube([back_length + 4, (rod_radius + 2) * 2, flat_cut_z - snap_clearance + 0.1]);
         }
         
-        // 5. Cap Recess (Half-moon socket at the very back)
+        // 5. Cap Recess (Half-moon socket at the very back) with robust snap-fit side grooves
         // The rod cap snaps into this recess to sit flush. Sliced flat globally to match cap perfectly.
         difference() {
             translate([-0.1, 0, shell_r_in])
@@ -165,6 +171,14 @@ module outer_shell() {
             // Flatten the bottom of the recess to match the flat bottom of the cap
             translate([-1, -cap_radius - 2, -0.1])
             cube([cap_depth + 2, (cap_radius + 2) * 2, flat_cut_z - snap_clearance + 0.1]);
+            
+            // Sturdy Y-positive Locking Groove
+            translate([0.2, cap_radius - 0.25, shell_r_in - 1.6])
+            cube([2.6, 1.5, 3.2]);
+            
+            // Sturdy Y-negative Locking Groove
+            translate([0.2, -cap_radius + 0.25 - 1.5, shell_r_in - 1.6])
+            cube([2.6, 1.5, 3.2]);
         }
         
         // 6. Longitudinal Entry Slot (At the top of the shell)
@@ -178,12 +192,7 @@ module outer_shell() {
         rotate([0, 90, 0])
         cylinder(r1 = bore_radius, r2 = bore_radius + 1.8, h = front_taper_length + 0.1, $fn = $fn);
         
-        // 8. Snap Lock Dimple (Small recess at the top of the cap socket)
-        // Catches the snap bump on the rod to provide a solid "click" feedback
-        translate([cap_depth / 2, 0, shell_r_in + (cap_radius + snap_clearance)])
-        sphere(r = 0.7, $fn = 20);
-        
-        // 9. Decorative Grip Grooves
+        // 8. Decorative Grip Grooves
         // Three stylish, recessed bands near the back for tactile grip
         for (i = [0 : 2]) {
             translate([back_length + 5 + i * 7, 0, shell_r_in])
@@ -201,33 +210,50 @@ module outer_shell() {
 module inner_rod() {
     difference() {
         union() {
-            // 1. Main Rod Cylinder
-            // Positioned concentrically with the shell (centered at Z = shell_r_in when assembled)
-            translate([cap_depth, 0, shell_r_in])
-            rotate([0, 90, 0])
-            cylinder(r = rod_radius, h = rod_length - cap_depth - front_taper_length, $fn = $fn);
+            // 1. Triangular Stick
+            // Positioned concentrically with the shell. Extrudes a flat-bottomed triangle.
+            translate([cap_depth, 0, 0])
+            rotate([90, 0, 90])
+            linear_extrude(height = rod_length - cap_depth - sphere_radius) {
+                polygon([
+                    [-triangle_base / 2, flat_cut_z],
+                    [triangle_base / 2, flat_cut_z],
+                    [0, shell_r_in + rod_radius]
+                ]);
+            }
             
-            // 2. Smooth Tapered Front Nose
-            // Guides the bag smoothly into the bore
-            translate([rod_length - front_taper_length, 0, shell_r_in])
-            rotate([0, 90, 0])
-            cylinder(r1 = rod_radius, r2 = 1.0, h = front_taper_length, $fn = $fn);
+            // 2. Large Front Sphere (Serves as entry guide ball, sliced flat globally)
+            translate([rod_length - sphere_radius, 0, shell_r_in])
+            sphere(r = sphere_radius, $fn = $fn);
             
-            // 3. Spherical Safety Tip (No sharp edges to tear bags or scratch fingers)
-            translate([rod_length, 0, shell_r_in])
-            sphere(r = 1.0, $fn = $fn);
-            
-            // 4. Rod Cap (Half-moon shaped to fit flush into the shell's back recess)
+            // 3. Rod Cap (Half-moon shaped to fit flush into the shell's back recess)
             translate([0, 0, shell_r_in])
             rotate([0, 90, 0])
             cylinder(r = cap_radius, h = cap_depth, $fn = $fn);
             
-            // 5. Snap Lock Protrusion (Small tactile snap bump on top of the cap)
-            translate([cap_depth / 2, 0, shell_r_in + cap_radius - 0.15])
-            sphere(r = 0.55, $fn = 20);
+            // 4. Sturdy Wedge Snap Barbs (Double-sided one-way structural lock)
+            // Y-positive Barb (Ramps up in X-positive, then drops flat forming a rock-solid lock)
+            translate([0, cap_radius - 0.25, shell_r_in - 1.5])
+            linear_extrude(height = 3.0) {
+                polygon([
+                    [0.2, 0],
+                    [2.6, 0.9],
+                    [2.6, 0]
+                ]);
+            }
+            
+            // Y-negative Barb
+            translate([0, -cap_radius + 0.25, shell_r_in - 1.5])
+            linear_extrude(height = 3.0) {
+                polygon([
+                    [0.2, 0],
+                    [2.6, -0.9],
+                    [2.6, 0]
+                ]);
+            }
         }
         
-        // 6. Global Flat Bottom Cut (Slices off the bottom of the entire rod, tip, and cap!)
+        // 5. Global Flat Bottom Cut (Slices off the bottom of the entire rod cap and sphere!)
         // Slices exactly at Z = flat_cut_z to create a perfect, co-planar printing surface
         translate([-10, -cap_radius - 5, -0.1])
         cube([clip_length + 20, (cap_radius + 5) * 2, flat_cut_z + 0.1]);

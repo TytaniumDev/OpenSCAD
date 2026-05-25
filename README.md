@@ -6,24 +6,20 @@ A highly durable, springless, two-piece sliding bag sealer (chip clip) designed 
 
 * **No Supports Required:** Both the hexagonal outer shell and the inner rod sit perfectly flat on the print bed.
 * **Maximum Bending Strength:** By printing flat horizontally, the filament layer lines run along the length of the clip, ensuring it won't snap under stress from thick bags.
-* **Co-Planar Flat Base:** A calculated flat-cut runs along the entire underside of both the rod and cap, providing a super-stable `3.88mm` flat footprint to guarantee excellent bed adhesion without rolling or warping.
-* **Perfect Matching Half-Moon Joint:** The sleeve features a matching half-moon socket in the back, ensuring the rod cap sits 100% flush and solid when assembled.
-* **Tactile Snap-Lock:** A small spherical snap bump on the rod cap clicks securely into a dimple in the shell's recess, keeping the rod locked captive inside the sleeve.
-* **Entry Guide Funnel:** A generous `15mm` flared conical entry taper on the sleeve and a smooth tapered nose on the rod allow bag folds to slide in smoothly without snagging.
+* **Triangular Stick Profile:** The inserting rod is designed as a triangular prism, providing excellent structural rigidity and a wide flat bottom base for printing flat on the bed with 100% success.
+* **Large Spherical Guide Tip:** Inspired by the original model, the front tip of the rod features a large sphere of radius `sphere_radius = bore_radius - snap_clearance` (3.8mm). This serves as a smooth guide-in ball to slide onto bags easily, and sits perfectly flat on the bed via our global flat-bottom cut.
+* **Double-Wedge Snap Lock (One-Way Permanent Fit):** Bypasses weak point dimples! The sides of the rod cap feature two sturdy, double-sided wedge barbs that ramp up during insertion and lock into matching rectangular grooves in the sleeve recess, creating an incredibly secure one-way structural lock.
+* **Entry Guide Funnel:** A generous `15mm` flared conical entry taper on the sleeve allows bag folds to slide in smoothly.
 
 ---
 
 ## 🖼️ Visual Renders
 
 ### 1. Assembled Fit
-When inserted, the rod sits concentrically inside the sleeve, and the rod cap sits completely flush with the back face of the sleeve:
+When inserted, the large guide sphere at the tip plugs the front opening of the sleeve beautifully, and the half-moon cap sits flush at the back, permanently locked:
 ![Assembled View](docs/assembled.png)
 
-### 2. Front Guided Entrance
-The flared entry taper on the sleeve and the guide nose on the rod form a wide guided funnel for smooth bag sliding:
-![Front Close-up](docs/front_close.png)
-
-### 3. Print Bed Layout
+### 2. Print Bed Layout
 Both parts lie flat on the bed, ready to export and print with no supports and high strength:
 ![Print Bed Layout](docs/print_layout.png)
 
