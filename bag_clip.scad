@@ -85,11 +85,15 @@ flat_cut_z = shell_r_in - rod_radius + 0.8;
 // Triangle base width for the rod stick (mm)
 triangle_base = rod_diameter;
 
-// Sphere radius at the end of the rod (mm)
-sphere_radius = bore_radius - snap_clearance;
+// Sphere radius at the end of the rod (mm). Shortened to act as a sleek nose guide.
+sphere_radius = (rod_diameter / 2) + 1.0;
 
-// Height offset to raise the sphere to make it more fully spherical while remaining printable
-sphere_raise_z = 1.0;
+// Height offset of the sphere (set to 0 to keep it perfectly concentric with the bore, preventing collisions)
+sphere_raise_z = 0.0;
+
+// Programmatic safety checks to guarantee fit and prevent geometric collisions
+assert(sphere_radius <= bore_radius - snap_clearance, "Error: sphere_radius is too large to fit through the sleeve bore!");
+assert(sphere_raise_z == 0, "Error: sphere must be concentric with the bore (sphere_raise_z must be 0) to prevent collision with the sleeve ceiling!");
 
 
 // =========================================================================
