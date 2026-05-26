@@ -226,14 +226,14 @@ module inner_rod() {
             cylinder(r = cap_radius, h = cap_depth, $fn = $fn);
             
             // 4. Sturdy Wedge Snap Barbs (Double-sided one-way structural lock)
-            // Parameterized to scale with cap_depth. Starts at X=2.0 (shoulder) and ramps down to cap_depth-2.0
+            // Shortened to be completely contained inside the groove cavities (from X=0.8 to X=2.2) when fully assembled
             // Y-positive Barb
             translate([0, cap_radius - 0.25, shell_r_in - 2.0])
             linear_extrude(height = 4.0) {
                 polygon([
-                    [2.0, 1.2],
-                    [cap_depth - 2.0, 0],
-                    [2.0, 0]
+                    [0.8, 1.2],
+                    [2.2, 0],
+                    [0.8, 0]
                 ]);
             }
             
@@ -241,9 +241,9 @@ module inner_rod() {
             translate([0, -cap_radius + 0.25, shell_r_in - 2.0])
             linear_extrude(height = 4.0) {
                 polygon([
-                    [2.0, -1.2],
-                    [cap_depth - 2.0, 0],
-                    [2.0, 0]
+                    [0.8, -1.2],
+                    [2.2, 0],
+                    [0.8, 0]
                 ]);
             }
         }
