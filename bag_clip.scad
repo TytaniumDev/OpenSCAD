@@ -140,27 +140,20 @@ module outer_shell() {
             cylinder(r1 = shell_r_out, r2 = shell_r_out - 1.2, h = 5, $fn = 6);
         }
         
-        // 3. Central Bore (Hollow cavity for the rod) with a flat floor and smooth transition funnel
-        // The transition cone from the wide cap recess to the central bore prevents any step block
+        // 3. Central Bore (Hollow cavity for the rod) with a flat floor
+        // Extends all the way from the back (-0.1) to the front to prevent any blockage,
+        // while the cap recess sits on top of it at the back.
         difference() {
-            union() {
-                // Smooth conical transition funnel at the back to easily guide the raised sphere in
-                translate([cap_depth, 0, shell_r_in])
-                rotate([0, 90, 0])
-                cylinder(r1 = cap_radius + snap_clearance, r2 = bore_radius, h = 6.0, $fn = $fn);
-                
-                // Main central bore (clamping section)
-                translate([cap_depth + 6.0, 0, shell_r_in])
-                rotate([0, 90, 0])
-                cylinder(r = bore_radius, h = clip_length - cap_depth - 5.0, $fn = $fn);
-            }
+            translate([-0.1, 0, shell_r_in])
+            rotate([0, 90, 0])
+            cylinder(r = bore_radius, h = clip_length + 0.2, $fn = $fn);
             
             // Flatten the bottom of the entire bore cavity (in global coordinates)
-            translate([cap_depth - 1, -cap_radius - 2, -0.1])
-            cube([clip_length - cap_depth + 3, (cap_radius + 2) * 2, flat_cut_z - gap_size + 0.1]);
+            translate([-1, -cap_radius - 2, -0.1])
+            cube([clip_length + 2, (cap_radius + 2) * 2, flat_cut_z - gap_size + 0.1]);
         }
         
-        // 4. Cap Recess (Half-moon socket at the very back) with robust snap-fit side grooves
+        // 4. Cap Recess (Half-moon socket at the very back)
         // Sliced flat globally to match the flat bottom of the cap. Consistently open at the top.
         difference() {
             translate([-0.1, 0, shell_r_in])
@@ -170,15 +163,17 @@ module outer_shell() {
             // Flatten the bottom of the recess to match the flat bottom of the cap
             translate([-1, -cap_radius - 2, -0.1])
             cube([cap_depth + 2, (cap_radius + 2) * 2, flat_cut_z - snap_clearance + 0.1]);
-            
-            // Sturdy Y-positive Locking Groove (Located to lock the barb shoulder at X=1.0)
-            translate([0, cap_radius - 0.25, shell_r_in - 1.6])
-            cube([1.2, 1.5, 3.2]);
-            
-            // Sturdy Y-negative Locking Groove
-            translate([0, -cap_radius + 0.25 - 1.5, shell_r_in - 1.6])
-            cube([1.2, 1.5, 3.2]);
         }
+        
+        // Sturdy Y-positive Locking Groove (Located to lock the barb shoulder at X=1.0)
+        // Subtracted directly from the shell so it forms a pocket/cavity!
+        translate([0, cap_radius - 0.25, shell_r_in - 1.6])
+        cube([1.2, 1.5, 3.2]);
+        
+        // Sturdy Y-negative Locking Groove
+        // Subtracted directly from the shell so it forms a pocket/cavity!
+        translate([0, -cap_radius + 0.25 - 1.5, shell_r_in - 1.6])
+        cube([1.2, 1.5, 3.2]);
         
         // 5. Longitudinal Entry Slot (At the top of the shell)
         // Runs the entire length of the shell from X=-1 to X=clip_length+1 (consistently open at the top)
