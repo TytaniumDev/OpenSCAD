@@ -72,8 +72,8 @@ rod_radius = rod_diameter / 2;
 // Cap radius of the rod (designed to fit flush inside the outer shell recess)
 cap_radius = shell_r_in - 0.5;
 
-// Depth of the cap and the matching recess
-cap_depth = 4.0;
+// Depth of the cap and the matching recess (dynamically derived to provide deep structural alignment)
+cap_depth = back_length - 2.0;
 
 // Rod length (slightly shorter than clip to prevent protruding at the front)
 rod_length = clip_length - 1.0;
@@ -165,15 +165,15 @@ module outer_shell() {
             cube([cap_depth + 2, (cap_radius + 2) * 2, flat_cut_z - snap_clearance + 0.1]);
         }
         
-        // Sturdy Y-positive Locking Groove (Located to lock the barb shoulder at X=1.0)
+        // Sturdy Y-positive Locking Groove (Located to lock the barb shoulder at X=2.0)
         // Subtracted directly from the shell so it forms a pocket/cavity!
-        translate([0, cap_radius - 0.25, shell_r_in - 1.6])
-        cube([1.2, 1.5, 3.2]);
+        translate([0.5, cap_radius - 0.25, shell_r_in - 2.2])
+        cube([2.0, 2.0, 4.4]);
         
         // Sturdy Y-negative Locking Groove
         // Subtracted directly from the shell so it forms a pocket/cavity!
-        translate([0, -cap_radius + 0.25 - 1.5, shell_r_in - 1.6])
-        cube([1.2, 1.5, 3.2]);
+        translate([0.5, -cap_radius + 0.25 - 2.0, shell_r_in - 2.2])
+        cube([2.0, 2.0, 4.4]);
         
         // 5. Longitudinal Entry Slot (At the top of the shell)
         // Runs the entire length of the shell from X=-1 to X=clip_length+1 (consistently open at the top)
@@ -226,24 +226,24 @@ module inner_rod() {
             cylinder(r = cap_radius, h = cap_depth, $fn = $fn);
             
             // 4. Sturdy Wedge Snap Barbs (Double-sided one-way structural lock)
-            // Oriented correctly: Thinnest part at X=3.8 enters first, ramps up to widest part at X=1.0 which locks in
+            // Parameterized to scale with cap_depth. Starts at X=2.0 (shoulder) and ramps down to cap_depth-2.0
             // Y-positive Barb
-            translate([0, cap_radius - 0.25, shell_r_in - 1.5])
-            linear_extrude(height = 3.0) {
+            translate([0, cap_radius - 0.25, shell_r_in - 2.0])
+            linear_extrude(height = 4.0) {
                 polygon([
-                    [1.0, 0.9],
-                    [3.8, 0],
-                    [1.0, 0]
+                    [2.0, 1.2],
+                    [cap_depth - 2.0, 0],
+                    [2.0, 0]
                 ]);
             }
             
             // Y-negative Barb
-            translate([0, -cap_radius + 0.25, shell_r_in - 1.5])
-            linear_extrude(height = 3.0) {
+            translate([0, -cap_radius + 0.25, shell_r_in - 2.0])
+            linear_extrude(height = 4.0) {
                 polygon([
-                    [1.0, -0.9],
-                    [3.8, 0],
-                    [1.0, 0]
+                    [2.0, -1.2],
+                    [cap_depth - 2.0, 0],
+                    [2.0, 0]
                 ]);
             }
         }
