@@ -140,16 +140,24 @@ module outer_shell() {
             cylinder(r1 = shell_r_out, r2 = shell_r_out - 1.2, h = 5, $fn = 6);
         }
         
-        // 3. Central Bore (Hollow cavity for the rod) with a flat floor
-        // Starts after the cap recess and goes all the way out the front
+        // 3. Central Bore (Hollow cavity for the rod) with a flat floor and smooth transition funnel
+        // The transition cone from the wide cap recess (6.0mm) to the central bore (3.95mm) prevents any step block
         difference() {
-            translate([cap_depth, 0, shell_r_in])
-            rotate([0, 90, 0])
-            cylinder(r = bore_radius, h = clip_length - cap_depth + 1, $fn = $fn);
+            union() {
+                // Smooth conical transition funnel at the back to easily guide the raised sphere in
+                translate([cap_depth, 0, shell_r_in])
+                rotate([0, 90, 0])
+                cylinder(r1 = cap_radius + snap_clearance, r2 = bore_radius, h = 6.0, $fn = $fn);
+                
+                // Main central bore (clamping section)
+                translate([cap_depth + 6.0, 0, shell_r_in])
+                rotate([0, 90, 0])
+                cylinder(r = bore_radius, h = clip_length - cap_depth - 5.0, $fn = $fn);
+            }
             
-            // Flatten the bottom of the bore cavity to match the flat bottom of the rod
-            translate([cap_depth - 1, -bore_radius - 2, -0.1])
-            cube([clip_length - cap_depth + 3, (bore_radius + 2) * 2, flat_cut_z - gap_size + 0.1]);
+            // Flatten the bottom of the entire bore cavity (in global coordinates)
+            translate([cap_depth - 1, -cap_radius - 2, -0.1])
+            cube([clip_length - cap_depth + 3, (cap_radius + 2) * 2, flat_cut_z - gap_size + 0.1]);
         }
         
         // 4. Cap Recess (Half-moon socket at the very back) with robust snap-fit side grooves
