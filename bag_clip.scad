@@ -11,19 +11,19 @@
 clip_length = 150; // [50:1:300]
 
 // Diameter of the inner rod (mm). A thicker rod is stiffer and stronger.
-rod_diameter = 7.0; // [3:0.1:12]
+rod_diameter = 8.0; // [3:0.1:12]
 
 // The gap/clearance between the inner rod and the outer shell (mm).
 // Adjust this based on the thickness of the bags you want to seal:
 // - 0.8mm to 1.0mm: Thin plastic bags (e.g., bread bags, single-layer chip bags)
-// - 1.1mm to 1.3mm: Medium bags (e.g., standard thick potato chip bags)
-// - 1.4mm to 1.8mm: Thick bags (e.g., coffee bags with foil lining, pet food bags)
-gap_size = 1.6; // [0.5:0.05:4.0]
+// - 1.1mm to 1.5mm: Medium bags (e.g., standard thick potato chip bags)
+// - 1.6mm to 3.0mm: Very thick/folded bags (e.g., coffee bags with foil lining, pet food bags)
+gap_size = 3.0; // [0.5:0.05:4.0]
 
 // Width of the slot in the outer shell (mm).
 // This must be wide enough for the folded bag to slide through.
 // Typically slightly less than the rod_diameter so the rod stays captured.
-slot_width = 4.5; // [2:0.1:10]
+slot_width = 5.0; // [2:0.1:10]
 
 // Wall thickness of the outer shell (mm). A thinner wall is more springy and hollow.
 shell_wall_thickness = 2.0; // [1.2:0.1:4]
