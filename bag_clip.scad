@@ -88,6 +88,9 @@ triangle_base = rod_diameter;
 // Sphere radius at the end of the rod (mm)
 sphere_radius = bore_radius - snap_clearance;
 
+// Height offset to raise the sphere to make it more fully spherical while remaining printable
+sphere_raise_z = 1.0;
+
 
 // =========================================================================
 // MAIN ENTRY POINT
@@ -138,31 +141,19 @@ module outer_shell() {
         }
         
         // 3. Central Bore (Hollow cavity for the rod) with a flat floor
-        // Starts after the solid back block and goes all the way out the front
+        // Starts after the cap recess and goes all the way out the front
         difference() {
-            translate([back_length, 0, shell_r_in])
+            translate([cap_depth, 0, shell_r_in])
             rotate([0, 90, 0])
-            cylinder(r = bore_radius, h = clip_length - back_length + 1, $fn = $fn);
+            cylinder(r = bore_radius, h = clip_length - cap_depth + 1, $fn = $fn);
             
             // Flatten the bottom of the bore cavity to match the flat bottom of the rod
-            translate([back_length - 1, -bore_radius - 2, -0.1])
-            cube([clip_length - back_length + 3, (bore_radius + 2) * 2, flat_cut_z - gap_size + 0.1]);
+            translate([cap_depth - 1, -bore_radius - 2, -0.1])
+            cube([clip_length - cap_depth + 3, (bore_radius + 2) * 2, flat_cut_z - gap_size + 0.1]);
         }
         
-        // 4. Rod Entry Tunnel (Through the back block to let the rod slide in)
-        // Has a matching flat bottom
-        difference() {
-            translate([-1, 0, shell_r_in])
-            rotate([0, 90, 0])
-            cylinder(r = rod_radius + snap_clearance, h = back_length + 2, $fn = $fn);
-            
-            // Flatten the bottom of the entry tunnel
-            translate([-2, -rod_radius - 2, -0.1])
-            cube([back_length + 4, (rod_radius + 2) * 2, flat_cut_z - snap_clearance + 0.1]);
-        }
-        
-        // 5. Cap Recess (Half-moon socket at the very back) with robust snap-fit side grooves
-        // The rod cap snaps into this recess to sit flush. Sliced flat globally to match cap perfectly.
+        // 4. Cap Recess (Half-moon socket at the very back) with robust snap-fit side grooves
+        // Sliced flat globally to match the flat bottom of the cap. Consistently open at the top.
         difference() {
             translate([-0.1, 0, shell_r_in])
             rotate([0, 90, 0])
@@ -172,30 +163,30 @@ module outer_shell() {
             translate([-1, -cap_radius - 2, -0.1])
             cube([cap_depth + 2, (cap_radius + 2) * 2, flat_cut_z - snap_clearance + 0.1]);
             
-            // Sturdy Y-positive Locking Groove
-            translate([0.2, cap_radius - 0.25, shell_r_in - 1.6])
-            cube([2.6, 1.5, 3.2]);
+            // Sturdy Y-positive Locking Groove (Located to lock the barb shoulder at X=1.0)
+            translate([0, cap_radius - 0.25, shell_r_in - 1.6])
+            cube([1.2, 1.5, 3.2]);
             
             // Sturdy Y-negative Locking Groove
-            translate([0.2, -cap_radius + 0.25 - 1.5, shell_r_in - 1.6])
-            cube([2.6, 1.5, 3.2]);
+            translate([0, -cap_radius + 0.25 - 1.5, shell_r_in - 1.6])
+            cube([1.2, 1.5, 3.2]);
         }
         
-        // 6. Longitudinal Entry Slot (At the top of the shell)
-        // Allows the folded bag to slide into the bore
-        translate([back_length, -slot_width / 2, shell_r_in])
-        cube([clip_length - back_length + 1, slot_width, shell_r_out * 2]);
+        // 5. Longitudinal Entry Slot (At the top of the shell)
+        // Runs the entire length of the shell from X=-1 to X=clip_length+1 (consistently open at the top)
+        translate([-1, -slot_width / 2, shell_r_in])
+        cube([clip_length + 2, slot_width, shell_r_out * 2]);
         
-        // 7. Internal Entry Taper (Conical flare at the front of the bore)
+        // 6. Internal Entry Taper (Conical flare at the front of the bore)
         // Makes it incredibly easy to guide the bag crease into the clip
         translate([clip_length - front_taper_length, 0, shell_r_in])
         rotate([0, 90, 0])
         cylinder(r1 = bore_radius, r2 = bore_radius + 1.8, h = front_taper_length + 0.1, $fn = $fn);
         
-        // 8. Decorative Grip Grooves
+        // 7. Decorative Grip Grooves
         // Three stylish, recessed bands near the back for tactile grip
         for (i = [0 : 2]) {
-            translate([back_length + 5 + i * 7, 0, shell_r_in])
+            translate([cap_depth + 4 + i * 7, 0, shell_r_in])
             rotate([0, 90, 0])
             rotate([0, 0, 30])
             difference() {
@@ -222,8 +213,8 @@ module inner_rod() {
                 ]);
             }
             
-            // 2. Large Front Sphere (Serves as entry guide ball, sliced flat globally)
-            translate([rod_length - sphere_radius, 0, shell_r_in])
+            // 2. Large Front Sphere (Serves as entry guide ball, raised slightly to be more fully spherical)
+            translate([rod_length - sphere_radius, 0, shell_r_in + sphere_raise_z])
             sphere(r = sphere_radius, $fn = $fn);
             
             // 3. Rod Cap (Half-moon shaped to fit flush into the shell's back recess)
@@ -232,13 +223,14 @@ module inner_rod() {
             cylinder(r = cap_radius, h = cap_depth, $fn = $fn);
             
             // 4. Sturdy Wedge Snap Barbs (Double-sided one-way structural lock)
-            // Y-positive Barb (Ramps up in X-positive, then drops flat forming a rock-solid lock)
+            // Oriented correctly: Thinnest part at X=3.8 enters first, ramps up to widest part at X=1.0 which locks in
+            // Y-positive Barb
             translate([0, cap_radius - 0.25, shell_r_in - 1.5])
             linear_extrude(height = 3.0) {
                 polygon([
-                    [0.2, 0],
-                    [2.6, 0.9],
-                    [2.6, 0]
+                    [1.0, 0.9],
+                    [3.8, 0],
+                    [1.0, 0]
                 ]);
             }
             
@@ -246,9 +238,9 @@ module inner_rod() {
             translate([0, -cap_radius + 0.25, shell_r_in - 1.5])
             linear_extrude(height = 3.0) {
                 polygon([
-                    [0.2, 0],
-                    [2.6, -0.9],
-                    [2.6, 0]
+                    [1.0, -0.9],
+                    [3.8, 0],
+                    [1.0, 0]
                 ]);
             }
         }
