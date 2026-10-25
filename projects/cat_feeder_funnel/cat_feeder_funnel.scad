@@ -9,12 +9,11 @@
 // surface leans out at most `wall_angle` degrees from vertical.
 //
 // Anti-jam features:
-// - Steep walls (default 35 degrees from vertical), well past the angle at
+// - Steep walls (default 40 degrees from vertical), well past the angle at
 //   which kibble stops sliding.
 // - A smooth, rounded throat where the cone meets the neck, so there is no
 //   ledge for kibble to bridge across.
 // - A straight (never narrowing) neck, so kibble isn't squeezed on the way out.
-// - Optional low ribs inside the cone that cut wall contact and friction.
 //
 // Every edge is rounded: the wall is drawn as a "stroke" of circles along
 // a centreline, so its ends are naturally half-round.
@@ -38,7 +37,7 @@ top_diameter = 250; // [120:1:256]
 
 // Wall lean from vertical (degrees). Must be 45 or less to print without
 // supports. Lower = steeper walls, less jamming, but a taller funnel.
-wall_angle = 35; // [20:1:45]
+wall_angle = 40; // [20:1:45]
 
 // Wall thickness (mm). Also sets how round the top rim and neck edge are.
 wall_thickness = 2.4; // [1.2:0.1:5]
@@ -46,13 +45,6 @@ wall_thickness = 2.4; // [1.2:0.1:5]
 // Radius of the rounded throat where the cone meets the neck (mm),
 // measured to the middle of the wall. Bigger = smoother flow.
 throat_radius = 25; // [5:1:60]
-
-/* [Anti-Jam Ribs] */
-// Number of low ribs inside the cone. Set to 0 for plain, flat walls.
-rib_count = 8; // [0:1:24]
-
-// How far each rib stands off the inner wall at its tallest (mm)
-rib_height = 2; // [0.5:0.1:4]
 
 /* [Printer] */
 // Printer bed size (mm), used to check the funnel fits
@@ -100,10 +92,6 @@ top_z = arc_end[1] + cone_rise;
 z_offset = half_wall - bed_flat;
 total_height = top_z + half_wall + z_offset;
 
-// Ribs run along the straight cone section, stopping short of the rim.
-rib_start = arc_end;
-rib_end = arc_end + 0.85 * [cone_run, cone_rise];
-
 echo(str("Funnel: ", top_diameter, " mm wide, ", total_height, " mm tall, neck OD ", neck_od, " mm"));
 
 assert(wall_angle <= 45, "wall_angle above 45 degrees needs supports");
@@ -112,7 +100,6 @@ assert(top_diameter > neck_od + 2 * throat_radius, "top_diameter too small for t
 assert(throat_radius > half_wall, "throat_radius must be larger than half the wall thickness");
 assert(cone_run > 0, "throat_radius too large for this top_diameter");
 assert(bed_flat < half_wall, "bed_flat must be less than half the wall thickness");
-assert(rib_height < wall_thickness, "rib_height must be less than wall_thickness or ribs poke through the outside");
 
 
 // =========================================================================
@@ -137,10 +124,7 @@ if (part == "print_layout") {
 // The complete funnel, sitting on the bed.
 module funnel() {
     difference() {
-        translate([0, 0, z_offset]) {
-            rotate_extrude() wall_profile();
-            ribs();
-        }
+        translate([0, 0, z_offset]) rotate_extrude() wall_profile();
         // Flatten the rounded neck edge so it sticks to the bed.
         translate([0, 0, -wall_thickness]) cylinder(h = wall_thickness, r = top_diameter);
     }
@@ -170,24 +154,4 @@ module stroke(points, width) {
             translate(points[i]) circle(d = width);
             translate(points[i + 1]) circle(d = width);
         }
-}
-
-// Low ribs on the inner cone wall, evenly spaced around the funnel.
-module ribs() {
-    if (rib_count > 0)
-        for (i = [0 : rib_count - 1])
-            rotate([0, 0, i * 360 / rib_count]) rib();
-}
-
-// One rib: thin at the throat, growing to `rib_height` near the rim, so it
-// never forms a ledge. Its centre runs along the inner wall surface.
-module rib() {
-    // Unit vector pointing from the wall centreline to the inner surface.
-    inward = [-cos(wall_angle), sin(wall_angle)];
-    p0 = rib_start + half_wall * inward;
-    p1 = rib_end + half_wall * inward;
-    hull() {
-        translate([p0[0], 0, p0[1]]) sphere(r = 0.01, $fn = 8);
-        translate([p1[0], 0, p1[1]]) sphere(r = rib_height, $fn = 24);
-    }
 }
