@@ -1,0 +1,16 @@
+name: Render models
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install OpenSCAD
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq openscad
+      - name: Render every project
+        run: scripts/render.sh --check

@@ -1,0 +1,19 @@
+# Scratch output from scripts/preview.sh and ad-hoc renders
+build/
+
+# OpenSCAD editor backups
+*.scad~
+*.bak
+
+# Sliced printer output (regenerate from the slicer instead)
+*.gcode
+*.bgcode
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Claude Code local-only settings
+.claude/settings.local.json
