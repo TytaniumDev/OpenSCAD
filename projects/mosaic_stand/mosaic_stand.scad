@@ -26,7 +26,7 @@ frame_border = 15; // [5:0.5:40]
 tilt_angle = 12; // [0:1:25]
 
 // Length of each cradle arm, measured along the mosaic's edge (mm)
-arm_length = 50; // [20:1:120]
+arm_length = 65; // [20:1:120]
 
 // Height of the front lip, measured square to the mosaic's edge (mm).
 // Keep it small: it covers this much of the mosaic's front face.
@@ -34,7 +34,7 @@ front_lip_height = 5; // [2:0.5:20]
 
 // Height of the back support, measured square to the mosaic's edge (mm).
 // Should be no more than frame_border so it only touches the wood.
-back_support_height = 12; // [4:0.5:40]
+back_support_height = 15; // [4:0.5:40]
 
 // Thickness of the front lip (mm)
 front_lip_thickness = 3; // [1.5:0.1:8]
