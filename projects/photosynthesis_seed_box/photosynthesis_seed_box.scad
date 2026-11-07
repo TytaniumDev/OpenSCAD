@@ -2,16 +2,15 @@
 // PHOTOSYNTHESIS SEED TOKEN BOX
 // =========================================================================
 // A tiny box for the seed tokens from the board game Photosynthesis.
-// The lid is a flat cap that covers the whole top, with a dovetail
-// tongue underneath that slides along grooves in the walls. It clicks
-// shut over a small detent bump. A sprouting seed is engraved in the cap.
+// A dovetailed lid slides in from the front and clicks shut over a small
+// detent bump. A sprouting seed is embossed on the lid.
 //
-// Because the cap covers the walls too, the closed top is one smooth
-// surface; the only seam runs around the outside edge.
+// The sliding lid adds only its own thickness to the box: no hinge, no
+// overlapping rim, nothing sticking out past the walls.
 //
 // Prints as two parts, both flat on the bed with no supports:
 //   - Box: open side up.
-//   - Lid: upside down, seed side on the bed.
+//   - Lid: seed side up.
 // =========================================================================
 
 /* [Interior] */
@@ -43,22 +42,23 @@ floor_thickness = 1.2; // [0.6:0.1:3]
 outer_edge_radius = 1; // [0.2:0.1:2]
 
 /* [Lid] */
-// Thickness of the flat cap that forms the top of the box (mm)
-lid_cap_thickness = 1.2; // [0.8:0.1:3]
-
-// Thickness of the dovetail tongue under the cap (mm)
-lid_tongue_thickness = 1; // [0.6:0.1:3]
+// Thickness of the sliding lid (mm)
+lid_thickness = 1.6; // [1:0.1:3]
 
 // How far the dovetail groove cuts into each wall, at its deepest (mm).
 // Deeper holds the lid more firmly but leaves the wall thinner.
 dovetail_depth = 0.8; // [0.4:0.1:2]
 
-/* [Seed Engraving] */
+/* [Seed Emboss] */
 // Overall height of the seed design on the lid (mm)
 seed_size = 18; // [8:0.5:26]
 
-// How deep the seed is cut into the cap (mm)
-seed_depth = 0.6; // [0.2:0.1:1.5]
+// How far the seed stands up from the lid (mm)
+seed_height = 0.6; // [0.2:0.1:1.5]
+
+// Rounding of the seed's top edge (mm). Keep it at or below half the
+// seed_height so the thin stem doesn't disappear.
+seed_edge_radius = 0.3; // [0:0.05:0.6]
 
 /* [Fit] */
 // Gap between the lid and its dovetail groove (mm).
@@ -100,36 +100,25 @@ outer_length = interior_length + 2 * wall_thickness;
 // Outside corners follow the inside ones, so the wall stays even all round.
 outer_corner_radius = interior_corner_radius + wall_thickness;
 
-// Heights, bottom to top:
-//   ledge_z:    top of the interior. The dovetail groove starts here, and
-//               the front wall stops here so the tongue can slide over it.
-//   wall_top_z: top of the side and back walls. The cap rests on these.
-//   box_height: top of the cap, the very top of the closed box.
-ledge_z = floor_thickness + interior_height;
-wall_top_z = ledge_z + lid_tongue_thickness;
-box_height = wall_top_z + lid_cap_thickness;
-
-// The cap rests on the wall tops, so the tongue is made slide_clearance
-// shorter than its groove. That keeps the tongue off the groove floor
-// and leaves the cap as the only thing setting the lid's height, which
-// is what keeps the top flush.
-tongue_bottom_z = ledge_z + slide_clearance;
+// The lid sits on a ledge at the top of the interior.
+lid_bottom_z = floor_thickness + interior_height;
+box_height = lid_bottom_z + lid_thickness;
 
 // Thinnest bit of wall, behind the deepest part of the dovetail groove.
 wall_behind_groove = wall_thickness - dovetail_depth;
 
 // The dovetail's 45-degree slope pulls the groove back in by one
-// lid_tongue_thickness from bottom to top. This is how far the top of
-// the groove reaches past the inside face of the wall (negative =
-// overhangs the interior).
-groove_top_offset = dovetail_depth - lid_tongue_thickness;
+// lid_thickness from bottom to top. This is how far the top of the
+// groove reaches past the inside face of the wall (negative = overhangs
+// the interior).
+groove_top_offset = dovetail_depth - lid_thickness;
 
 // Centre of the detent bump: on top of the front wall, halfway through it.
 detent_y = -(interior_length / 2 + wall_thickness / 2);
 
-// Radius of the dimple where it meets the tongue's underside. The dimple
-// is the bump's sphere lifted by slide_clearance; this must stay inside
-// the front wall or it would notch the lid's front edge.
+// Radius of the dimple under the lid where it meets the lid's underside.
+// The dimple is the bump's sphere lifted by slide_clearance; this must
+// stay inside the front wall or it would notch the lid's front edge.
 dimple_drop = detent_radius - detent_height - slide_clearance;
 dimple_footprint_radius = sqrt(detent_radius * detent_radius
     - max(dimple_drop, 0) * max(dimple_drop, 0));
@@ -137,17 +126,17 @@ dimple_footprint_radius = sqrt(detent_radius * detent_radius
 // Seed artwork is drawn 18 mm tall, then scaled to seed_size.
 seed_drawn_size = 18;
 
+// Centre of the visible lid top, front to back. The lid top runs from
+// the front face to the back of the groove.
+lid_top_centre_y = (-outer_length / 2 + interior_length / 2 + groove_top_offset) / 2;
+
 // Sanity checks for impossible parameter combinations
 assert(wall_behind_groove >= 0.8,
     "dovetail_depth leaves less than 0.8 mm of wall behind the groove. Make the walls thicker or the groove shallower.");
 assert(interior_corner_radius + groove_top_offset > 0,
-    "lid_tongue_thickness is too large for interior_corner_radius and dovetail_depth: the top of the dovetail would lose its rounded corners.");
-assert(slide_clearance < lid_tongue_thickness,
-    "slide_clearance must be smaller than lid_tongue_thickness.");
-assert(outer_edge_radius < lid_cap_thickness,
-    "outer_edge_radius must be smaller than lid_cap_thickness so the rounding stays on the cap, above the seam.");
-assert(seed_depth < lid_cap_thickness,
-    "seed_depth must be smaller than lid_cap_thickness or the seed cuts through the cap.");
+    "lid_thickness is too large for interior_corner_radius and dovetail_depth: the top of the dovetail would lose its rounded corners.");
+assert(outer_edge_radius < lid_thickness,
+    "outer_edge_radius must be smaller than lid_thickness so the rounding stays on the lid.");
 assert(outer_edge_radius < outer_corner_radius,
     "outer_edge_radius must be smaller than the outside corner radius.");
 assert(interior_floor_fillet < interior_corner_radius,
@@ -166,8 +155,10 @@ assert(seed_size <= min(interior_width, interior_length) - 2,
 
 if (part == "print_layout") {
     box();
-    translate([outer_width + 5, 0, 0])
-    lid_print_orientation();
+    // The lid is modelled in its closed position, so drop it to the bed
+    // and move it beside the box.
+    translate([outer_width + 5, 0, -lid_bottom_z])
+    lid();
 }
 else if (part == "assembled") {
     color("Peru") box();
@@ -179,7 +170,8 @@ else if (part == "box") {
     box();
 }
 else if (part == "lid") {
-    lid_print_orientation();
+    translate([0, 0, -lid_bottom_z])
+    lid();
 }
 
 
@@ -188,70 +180,39 @@ else if (part == "lid") {
 // =========================================================================
 
 // --- BOX ---
-// The closed shape below the cap, hollowed out, with the lid's groove
-// cut into the top and the detent bump added on the front wall.
+// The rounded outer shell, hollowed out, with the lid's groove cut into
+// the top and the detent bump added on the front wall.
 module box() {
     difference() {
-        // intersection() keeps only what's inside both shapes: here, the
-        // part of the shell below the wall tops.
-        intersection() {
-            closed_shape();
-            below_z(wall_top_z);
-        }
+        rounded_box([outer_width, outer_length, box_height],
+            outer_corner_radius, outer_edge_radius);
+
         cavity();
-        lid_slot(grow = 0, bottom_z = ledge_z, top_z = wall_top_z + 0.1);
+        lid_slot(grow = 0, top_z = box_height + 0.1);
     }
     detent_bump();
 }
 
-// --- LID (closed position) ---
-// The cap is the top slice of the same closed shape the box is cut
-// from, so the two meet in a flush seam all round. The tongue is the
-// dovetail groove shrunk by slide_clearance on every side, clipped to
-// the closed shape so its front picks up the box's rounded corners.
+// --- LID ---
+// The lid's shape is the box's outer shell clipped to the dovetail
+// groove, so its front edge picks up the same rounded corners as the box.
+// It is slide_clearance smaller than the groove on each side. It needs
+// no clearance underneath: it rests on the ledge, and the side gaps let
+// it slide. So it keeps its full thickness and sits flush with the
+// wall tops.
 module lid() {
     difference() {
-        union() {
-            difference() {
-                closed_shape();
-                below_z(wall_top_z);
-            }
-            intersection() {
-                closed_shape();
-                lid_slot(grow = -slide_clearance,
-                    bottom_z = tongue_bottom_z, top_z = wall_top_z + 0.1);
-            }
+        // intersection() keeps only what's inside both shapes.
+        intersection() {
+            rounded_box([outer_width, outer_length, box_height],
+                outer_corner_radius, outer_edge_radius);
+            lid_slot(grow = -slide_clearance, top_z = box_height);
         }
         detent_dimple();
-        seed_engraving();
     }
-}
 
-// --- LID, AS PRINTED ---
-// Flipped upside down (rotate 180 degrees about x) so the cap lies flat
-// on the bed and the tongue's 45-degree sides lean outward as they rise,
-// which prints without supports. Then lowered so the cap's top is at z = 0.
-module lid_print_orientation() {
-    translate([0, 0, box_height])
-    rotate([180, 0, 0])
-    lid();
-}
-
-// --- CLOSED SHAPE ---
-// The rounded outer shape of the whole closed box. The box and the lid
-// are both cut from it, so they line up exactly.
-module closed_shape() {
-    rounded_box([outer_width, outer_length, box_height],
-        outer_corner_radius, outer_edge_radius);
-}
-
-// --- BELOW Z ---
-// A big block filling everything below height z, used to split the
-// closed shape into box and cap.
-module below_z(z) {
-    size = 4 * max(outer_width, outer_length, box_height);
-    translate([-size / 2, -size / 2, z - size])
-    cube(size);
+    translate([0, lid_top_centre_y, box_height - 0.1])
+    seed_emboss();
 }
 
 // --- CAVITY ---
@@ -264,34 +225,29 @@ module cavity() {
 }
 
 // --- LID SLOT ---
-// The dovetail-shaped space the tongue slides along. At the ledge it
-// reaches dovetail_depth into the walls, then leans in at 45 degrees as
-// it rises, so the walls overhang the tongue's edges and hold it down.
-// A 45-degree overhang prints cleanly without supports.
+// The dovetail-shaped space the lid slides along. It starts on the ledge
+// at lid_bottom_z and leans in at 45 degrees as it rises, so the walls
+// overhang the lid's edges and hold it down. A 45-degree overhang prints
+// cleanly without supports.
 //
 // hull() of a thin slice at the bottom and a narrower one at the top
 // fills in the sloped sides between them.
-//   grow:     widens (or with a negative value, shrinks) the slot on every
-//             side. The box cuts with 0; the tongue is made with
-//             -slide_clearance.
-//   bottom_z: where the slot starts.
-//   top_z:    where the slot stops.
-module lid_slot(grow, bottom_z, top_z) {
+//   grow:  widens (or with a negative value, shrinks) the slot on every
+//          side. The box cuts with 0; the lid is made with -clearance.
+//   top_z: where the slot stops.
+module lid_slot(grow, top_z) {
+    rise = top_z - lid_bottom_z;
     slice = 0.01;
     hull() {
-        translate([0, 0, bottom_z])
+        translate([0, 0, lid_bottom_z])
         linear_extrude(height = slice)
-        lid_slot_outline(lid_slot_reach(grow, bottom_z));
+        lid_slot_outline(dovetail_depth + grow);
 
         translate([0, 0, top_z - slice])
         linear_extrude(height = slice)
-        lid_slot_outline(lid_slot_reach(grow, top_z));
+        lid_slot_outline(dovetail_depth + grow - rise);
     }
 }
-
-// How far the slot reaches past the inside face of the wall at height z.
-// The 45-degree slope means it loses 1 mm of reach for every 1 mm of rise.
-function lid_slot_reach(grow, z) = dovetail_depth + grow - (z - ledge_z);
 
 // --- LID SLOT OUTLINE (2D) ---
 // The interior's rounded rectangle, pushed outward by `reach`, and
@@ -314,7 +270,7 @@ module detent_bump() {
     if (detent_height > 0) {
         intersection() {
             detent_sphere(lift = 0);
-            translate([-detent_radius, detent_y - detent_radius, ledge_z - 0.01])
+            translate([-detent_radius, detent_y - detent_radius, lid_bottom_z - 0.01])
             cube([detent_radius * 2, detent_radius * 2, detent_radius]);
         }
     }
@@ -331,18 +287,16 @@ module detent_dimple() {
 
 // --- DETENT SPHERE ---
 // Sphere positioned so its top pokes detent_height (plus `lift`) above
-// the underside of the tongue.
+// the ledge.
 module detent_sphere(lift) {
-    translate([0, detent_y, tongue_bottom_z + detent_height + lift - detent_radius])
+    translate([0, detent_y, lid_bottom_z + detent_height + lift - detent_radius])
     sphere(r = detent_radius);
 }
 
-// --- SEED ENGRAVING ---
-// The seed artwork, cut seed_depth into the top of the cap. It starts
-// 0.1 mm above the top so the cut doesn't leave a coincident face.
-module seed_engraving() {
-    translate([0, 0, box_height - seed_depth])
-    linear_extrude(height = seed_depth + 0.1)
+// --- SEED EMBOSS ---
+// The seed artwork, raised off the lid with a rounded top edge.
+module seed_emboss() {
+    rounded_extrude(height = seed_height + 0.1, radius = seed_edge_radius)
     scale(seed_size / seed_drawn_size)
     seed_2d();
 }
@@ -421,6 +375,27 @@ module rounded_box(size, corner_r, edge_r) {
                 translate([corner_r - edge_r, 0]) circle(r = edge_r);
                 translate([0, -edge_r]) square([corner_r, 2 * edge_r]);
             }
+        }
+    }
+}
+
+// --- ROUNDED EXTRUDE ---
+// Like linear_extrude(), but the top edge is rounded with `radius`.
+// The rounding is built from a few thin layers, each shrunk a bit more
+// with offset() so their steps trace a quarter circle.
+module rounded_extrude(height, radius, steps = 4) {
+    if (radius <= 0) {
+        linear_extrude(height = height) children();
+    } else {
+        straight = height - radius;
+        linear_extrude(height = straight + 0.01) children();
+        for (i = [1 : steps]) {
+            a0 = 90 * (i - 1) / steps;
+            a1 = 90 * i / steps;
+            translate([0, 0, straight + radius * sin(a0)])
+            linear_extrude(height = radius * (sin(a1) - sin(a0)) + 0.01)
+            offset(delta = -radius * (1 - cos(a1)))
+            children();
         }
     }
 }
