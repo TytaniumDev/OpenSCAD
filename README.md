@@ -9,7 +9,7 @@ A collection of my parametric 3D models, written in [OpenSCAD](https://openscad.
 | [Bag clip](projects/bag_clip/) | Springless two-piece sliding bag sealer (chip clip) that prints flat with no supports. |
 | [Cat feeder funnel](projects/cat_feeder_funnel/) | Wide, anti-jam funnel that sits in the top of a PetLibro automatic feeder. Prints without supports. |
 | [Mosaic stand](projects/mosaic_stand/) | Desk stand that shows a square framed mosaic on its corner as a diamond, leaning back for stability. Prints without supports. |
-| [Photosynthesis seed box](projects/photosynthesis_seed_box/) | Tiny box with a sliding, click-shut lid and an embossed seed for the Photosynthesis seed tokens. Prints without supports. |
+| [Photosynthesis seed box](projects/photosynthesis_seed_box/) | Tiny box with a seamless sliding, click-shut lid and an engraved seed for the Photosynthesis seed tokens. Prints without supports. |
 
 ## Layout
 
