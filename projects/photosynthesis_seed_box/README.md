@@ -7,6 +7,7 @@ A tiny box for the seed tokens from the board game *Photosynthesis*. The inside 
 ## Design
 
 * **Sliding dovetail lid.** The lid slides in from the front along grooves cut into the tops of the walls. The grooves lean in at 45°, so the walls hold the lid down. The lid only adds its own 1.6 mm thickness to the box: no hinge, no rim, nothing past the walls. The whole box is 32 × 32 × 17.8 mm, plus 0.6 mm for the seed.
+* **Flush top.** The lid sits level with the wall tops. It's `slide_clearance` (0.2 mm) smaller than its groove on each side, which gives about 0.14 mm of gap on the 45° faces. It needs no gap underneath because it rests on the ledge.
 * **Click shut.** A small dome on top of the front wall drops into a dimple under the lid when it's fully closed, so it doesn't slide open in the game box. Set `detent_height = 0` to turn it off.
 * **Rounded everywhere.** The outside corners and edges are rounded, and the lid is cut from the same rounded shell so its front edge matches. Inside, the corners and floor are filleted, which costs nothing with round tokens and makes the last one easy to scoop out.
 * **Embossed seed.** A teardrop seed with two leaves sprouting from it, raised 0.6 mm with a rounded top edge.

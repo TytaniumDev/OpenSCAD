@@ -196,20 +196,22 @@ module box() {
 // --- LID ---
 // The lid's shape is the box's outer shell clipped to the dovetail
 // groove, so its front edge picks up the same rounded corners as the box.
-// It is slide_clearance smaller than the groove on each side, and sits
-// slide_clearance below the box top so it never stands proud.
+// It is slide_clearance smaller than the groove on each side. It needs
+// no clearance underneath: it rests on the ledge, and the side gaps let
+// it slide. So it keeps its full thickness and sits flush with the
+// wall tops.
 module lid() {
     difference() {
         // intersection() keeps only what's inside both shapes.
         intersection() {
             rounded_box([outer_width, outer_length, box_height],
                 outer_corner_radius, outer_edge_radius);
-            lid_slot(grow = -slide_clearance, top_z = box_height - slide_clearance);
+            lid_slot(grow = -slide_clearance, top_z = box_height);
         }
         detent_dimple();
     }
 
-    translate([0, lid_top_centre_y, box_height - slide_clearance - 0.1])
+    translate([0, lid_top_centre_y, box_height - 0.1])
     seed_emboss();
 }
 
